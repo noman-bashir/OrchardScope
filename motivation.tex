@@ -1,0 +1,31 @@
+There has been a lot of work on developing precision agriculture systems, both in industry and academia. 
+However, it is generally application-specific, assumes internet connectivity, does not provide high spatial and temporal resolution data, and does not support real-time applications. 
+In this section, we highlight the problems and how they motivate our system. 
+
+
+\noindent
+\textbf{Lacks high temporal and spatial resolution data:}
+The existing systems focus on the use of static cameras and drones. 
+The problem with static cameras is that they provide only high level monitoring of the farm. The resolution provided by them is not suitable for a lot of applications such as disease detection and pesticide spray. The drones typically have high resolution cameras and can gather data for such applications. However, management of drones fleet for high spatial resolution (images of tree leaves and individual fruits) and high temporal resolution (every few minutes) presents a significant challenge. Also, some of the applications may require that the images over time are always taken from a fixed angle, this will also be a significant hurdle for systems that only use drones and may require additional infrastructure i.e. QR tags. 
+In short, the existing systems are not capable of handling scenarios where we need very high temporal and spatial resolution data with application-specific requirements. 
+
+\noindent
+\textbf{Strong Cloud Dependency:}
+We should motivate against total cloud dependency by citing lack of connectivity and cloud costs. There may be places where the farmers may have internet connectivity on the farm, a system designed without this assumption would certainly be preferable. 
+Second, buying a computer to do machine-learning and computer vision tasks is currently cheaper than the cloud-based options. The biggest attraction of the cloud is its scalability. 
+We should present some calculations here to backup this claim. 
+We should acknowledge that the training on edge devices is a challenge, but there is a lot of work on federated machine learning. 
+
+Another point that we need to handle is the availability of the raw data and processed output to the end-user. For a farmer, they may only be interested in the final output, but agricultural scientists may also need access to the raw data. Our default setting is to process everything at the edge and give only final output. We need to address how to provide access to the raw data. We have the gateway node that connects with the cloud, but is cellular connection suitable for transferring large image data?
+
+\noindent
+\textbf{Application specific, non-extensible system design:}
+Most of the precision agriculture systems that exist today cater to only specific applications. For example, See \& Spray technology by Blue River focuses only on smart herbicide spraying~\cite{see&spray}, CropX platform is designed for smart irrigation and fertilizing~\cite{cropx}, and FieldAgent and PrecisionHawk systems focus on generating field maps to monitor crop growth and health~\cite{precisionhawk, fieldagent-sentera}. The cost and complexity of combining these systems to provide an holistic view of the farms will deter farmers and academic researchers. 
+
+
+\noindent
+\textbf{Lack of real-time support:}
+
+% \fatima{Another point could be that we provide an extensible test bed that can be tailored towards the needs of agriculture researchers in various domains ranging from increasing yields, sustainability, and lesser use of chemicals etc. Other solutions only cater to specific use cases?}
+
+% \textbf{Key points on how our system is different from FarmBeats. Our temporal, spatial resolution requirements and application-specific constraints mean that drones are not suitable. Their cameras are basic PTZ cameras and they do not consider the explicit optical zoom cameras. Their network and edge-computing architecture is not suitable for a lot of scenarios.}

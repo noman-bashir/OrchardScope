@@ -1,0 +1,11 @@
+There has been a huge increase in the use of Internet-of-Things, cloud/edge computing, and data-driven techniques to help boost agricultural productivity by collecting, processing, and analyzing fine-grained environmental data. 
+In addition to end farmers using more precise information about their crops, these systems can enable agriculture scientists to get more insight into factors affecting crop yields, disease detection, and pesticide spraying. 
+However, current systems lack the ability to get high temporal and spatial resolution data and make assumptions that may not always be true in the wild. 
+We present the architecture, design, and preliminary evaluation of OrchardScope, a wireless sensing and computing network for monitoring plants and controlling actuating devices in the large and diverse agriculture farms. 
+The OrchardScope system consists of three tiers:  the OrchardScope node which gathers visual and environmental data, processes it, and provides a control interface to the nearby smart actuating devices, a network fabric which exposes this interface to the arbitrary network endpoints, and an application software that uses this networked interface to provide various precision agriculture applications.  
+The OrchardScope node integrates a Jetson Nano module with a high resolution camera to capture the visual data from the farm,  with optional control to attach various environmental sensors.  
+The network comprises a complete BLE stack on every node and a gateway router that connects to the external networks.   
+The application tier receives and stores readings in a cloud-based database and uses a web server for visualization. 
+Nodes join the BLE mesh network after being installed and begin interactions with the application layer. 
+We plan to evaluate our system in a preliminary deployment at a greenhouse as well as a research orchard managed by the agriculture school at a major university with 10 nodes spread over few blocks of orchard and present visual data from this preliminary deployment.
+\textbf{will update at the end.}
