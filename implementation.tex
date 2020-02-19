@@ -1,0 +1,48 @@
+In this section, we present the implementation details of a mid-tier prototype device. The key objective of developing a lab prototype was to develop back-end software to devise a camera control strategy to capture the desired object in the farm, process high resolution video streams, implement mid-tier communication mechanism to enable collaborative applications, and implement solar energy forecasting approach. 
+
+\noindent
+\textbf{Hardware and Enabling Technologies:} We have used Jetson Nano~\cite{jetson-nano} as the main processing unit in the prototype mid-tier device as it offers a low cost, low power solution to run multiple machine learning applications in parallel while enabling easy interface of variety of sensors, i.e. cameras through CSI or ethernet interface, RFID reader using USB. The prototype device uses Bluetooth Low Energy (BLE) module to enable communication between mid-tier devices due to its low cost, low power, and inherent support for mesh networking. Also, BLE 5.0 offers data rates upto 2Mbps, which enables collaborative edge applications~\cite{ble5}. 
+We use an IP-based PTZ camera from Urban Security Group that offers 12MP resolution, variable focal length with 6.5-143mm range offering 22x optical zoom, and IR imaging capabilities~\cite{camera-link}. The camera can be fully controlled via Common Gateway Interface (CGI) commands over HTTP protocol. 
+The device is powered with a 50W solar panel and xAh lithium-ion battery. 
+% The small size and low-power requirement make it suitable for in-the-wild and low energy applications. The computing power at the edge provided by Jetson nano allow us to enable applications that require real-time response even in the presence of low/intermitten Internet connectivity. 
+
+\noindent
+\textbf{Mid-tier Services:} We have implemented mid-tier services that enables focusing on the desired object on the farm and capturing a high resolution image by processing the video stream. In addition, we establish a network between mid-tier devices on top of BLE. 
+
+\noindent
+\textbf{1. Camera Control:} The task of camera control service is to point the camera to the desired object and capture an image. We use area zoom CGI command, which is given below. 
+
+\vspace{-1em}
+\begin{equation*}
+    GET http://adr/command/ptzf.cgi?AreaZoom=x,y,w,h 
+\end{equation*}
+
+Where, adr is the IP address of the camera, (x,y) is the center of the rectangular area we want to capture defined by (pan, tilt) tuple, and (w,h) are the width and height of the rectangle, respectively. This command makes the PTZ camera to point to the desired position, zoom into the rectangular area, and take one shot image. 
+The task of mapping the objects of interests to (pan, tilt) points requires either manual labeling or using computer vision to identify the objects in the field of view and mapping them dynamically. We plan to explore this task in the future work. 
+
+\noindent
+\textbf{2. Mesh Network:} We use Nordic Semiconductor nRF52840 Dongle which supports BLE, including 2Mbps, long range, and mesh networking features~\cite{nrf52840}. 
+With Bluetooth mesh, BLE devices can now operate in a many-to-many topology, or what's called mesh, where devices can set up connections with multiple other devices within the network. Bluetooth mesh follows a publish-subscribe mechanism where messages are typically sent to a group of nodes or a virtual address. We are currently exploring configuring virtual addresses or groups based on the physical presence of devices, i.e. mid-tier devices deployed in the same block of trees, and based on their logical tasks such as data aggregation or collaborating edge computing.
+
+\noindent
+\textbf{Back-end Services: }
+We have also implemented back-end services that ensure the reliable operation of the device. One such service is the forecasting of future solar energy generation. Our implementation leverages Solar-TK~\cite{bashir2019solar}, an open-source solar performance model, to estimate a site’s solar energy output based on its location, time, physical characteristics, cloud cover, and temperature. It uses cloud cover and temperature forecast data from NOAA's NDFD~\cite{ndfd} to make solar power forecasts upto 36hrs in to the future. However, due to intermittent Internet connectivity, the mid-tier device may not always have the most updated forecasts. NDFD data provides forecasts upto 168hrs, with the forecasts farthest into the horizon likely being less accurate. We modify the Solar-TK source code to extend the energy forecasting to 168hrs. We opportunistically update the cloud cover and temperature forecasts to make our energy estimates more accurate. 
+
+\noindent
+\textbf{Use Case:} One of the applications enabled by this lab prototype is the apple orchard thinning. The apples grow in clusters and yield is lower, interestingly, if all the apples in the cluster are allowed to grow. Farmers use thinning spray to shed a specific amount of apples to ensure optimal yield. The amount of thinning spray depends upon the size of apples and their growth rate. Also, the sizes of around 75 clusters in a block of trees are needed in order to determine the spray amount accurately. 
+The pan-tilt capability along with the high resolution of the camera allows us to monitor around 30 trees per mid-tier device, which may contain more than 300 apple clusters. The collected images are then processed by a computer vision technique to determine the size of apples, which is the subject of our future work. 
+
+\noindent
+\textbf{Future Work and Discussion:} We plan to deploy the prototype device in a research apple orchard managed by the agricultural department of a major public university in the northeast, USA. The deployment is expected to be in the Spring season as the leaves come back and apples grow. We plan to evaluate different components in all tiers as we deploy them on the apple orchard. 
+
+
+% Prototype mid-tier device.. 
+% technology used, jetson nano, ble (between mid tier devices), wifi (mid-tier to top tier). 
+
+% services implemented.. 
+% data collection from high resolution cameras 
+% data aggregation from different sources, i.e. cameras 
+
+% auxiliary service implemented 
+% solar power forecasting
+

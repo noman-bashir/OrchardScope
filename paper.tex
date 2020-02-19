@@ -4,13 +4,17 @@
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{subcaption}
+\usepackage{balance}
+\usepackage{empheq}
+\usepackage[most]{tcolorbox}
+\usepackage{xcolor}
 
 \begin{document}
 \title{\Large \bf OrchardScope: A Network and Computing Architecture in Precision Agriculture}
 
 
 \newcommand\fatima[1]{\textcolor{magenta}{Fatima: #1}}
-\newcommand\noman[1]{\textcolor{green}{Noman: #1}}
+\newcommand\noman[1]{\textcolor{red}{Noman: #1}}
 
 %for single author (just remove % characters)
 \author{
@@ -41,9 +45,9 @@ Your Institution,
 \input{design.tex}
 \label{design}
 
-% \section{Key Challenges}
-% \input{challenges.tex}
-% \label{challenges}
+\section{Implementation}
+\input{implementation.tex}
+\label{implementation}
 
 \section{Related Work}
 \input{related.tex}
