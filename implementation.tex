@@ -12,17 +12,22 @@ The device is powered with a 50W solar panel and xAh lithium-ion battery.
 \noindent
 \textbf{1. Camera Control:} The task of camera control service is to point the camera to the desired object and capture an image. We use area zoom CGI command, which is given below. 
 
-\vspace{-1em}
-\begin{equation*}
-    GET http://adr/command/ptzf.cgi?AreaZoom=x,y,w,h 
-\end{equation*}
+\vspace{0.5em}
+% \begin{equation*}
+%     GET http://adr/command/ptzf.cgi?AreaZoom=x,y,w,h 
+% \end{equation*}
+
+% \textcolor{blue}
+{GET http://adr/command/ptzf.cgi?AreaZoom=x,y,w,h}
 
 Where, adr is the IP address of the camera, (x,y) is the center of the rectangular area we want to capture defined by (pan, tilt) tuple, and (w,h) are the width and height of the rectangle, respectively. This command makes the PTZ camera to point to the desired position, zoom into the rectangular area, and take one shot image. 
 The task of mapping the objects of interests to (pan, tilt) points requires either manual labeling or using computer vision to identify the objects in the field of view and mapping them dynamically. We plan to explore this task in the future work. 
+\noman{A result for this section would be a wide-angle image of the farm and the zoomed-in high resolution images of the objects that we want to monitor. Also, high resolution images of the corners of the field of view. }
 
 \noindent
 \textbf{2. Mesh Network:} We use Nordic Semiconductor nRF52840 Dongle which supports BLE, including 2Mbps, long range, and mesh networking features~\cite{nrf52840}. 
 With Bluetooth mesh, BLE devices can now operate in a many-to-many topology, or what's called mesh, where devices can set up connections with multiple other devices within the network. Bluetooth mesh follows a publish-subscribe mechanism where messages are typically sent to a group of nodes or a virtual address. We are currently exploring configuring virtual addresses or groups based on the physical presence of devices, i.e. mid-tier devices deployed in the same block of trees, and based on their logical tasks such as data aggregation or collaborating edge computing.
+\noman{A result for this should be a analysis of BLE performance inside the farm.}
 
 \noindent
 \textbf{Back-end Services: }

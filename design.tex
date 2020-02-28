@@ -4,62 +4,79 @@
 % We outline the details of each layer next. 
 % The OrchardScope node supports a set of operations such as take images, run an image processing task, and communicate with nearby actuating device . The OrchardScope network is a wireless Bluetooth Low Energy (BLE) mesh network that uses a LTE-enabled gateway to route packets between the OrchardScope nodes and other networks. The application tier consist of precision agriculture applications that interacts with the network of OrchardScope nodes via its API.
 
-OrchardScope design consists of three tiers: (1) The bottom-tier consists of densely deployed resource-constrained devices providing high spatial coverage. These devices are batteryless; they collect and transmit data intermittently. (2) The mid-tier comprise of devices capable of capturing and processing high-resolution data such as video streams. They are also responsible for powering up bottom-tier devices and reading data from them. (3) The top-tier is a cloud component connected to mid-tier through unreliable network, as is the case in most farm settings. This tier has excess storage and compute capability at the cost of high access latency.
+To motivate the design of our system, we present two high level requirements that meet the needs for a diverse set of emerging precision agriculture applications: 
+
+\noindent\textbf{Temporally and Spatially Rich Sensor Data:} Agricultural scientists have long outlined the need for high temporal and spatial resolution visual and environmental data to study the existence of microclimates, the impact of microclimates on crop yields, the correlation between visual and environmental data, and the growth/spread of diseases\cite{microclimate-specifics, microcolimate-effect, microclimates}. 
+    
+\noindent\textbf{Low latency inference and response:} A large number of applications require near-real time response for the optimal performance, i.e. smart spraying, early disease identification, and pest attack detection. 
+
+To fulfill these requirements, we present a three-tiered edge computing architecture: (1) The bottom-tier consists of densely deployed resource-constrained devices providing high spatial coverage. These devices are batteryless; they collect and transmit data intermittently and opportunistically. (2) The mid-tier comprises devices capable of capturing and processing high-resolution data such as video streams. It is also responsible for powering up bottom-tier devices and reading data from them. (3) The top-tier is a cloud component connected to mid-tier through unreliable network, as is the case in most farm settings. This tier has excess storage and compute capability at the cost of high access latency.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.4\textwidth]{./figures/arch_v2.pdf}
 % \vspace{-0.4cm}
-\caption{Three-tiered OrchardScope architecture}
+\caption{Three-tiered architecture}
 % \vspace{-0.3cm}
 \label{fig:architecture}
 \end{figure}
 
 
 \subsection{Bottom-Tier}
-The bottom-tier consists of tiny, batteryless, and intermittently-powered devices that collect environmental variables such as humidity, temperature, pH value, soil moisture, etc. 
+The bottom-tier consists of tiny, batteryless, and intermittently-powered devices that collect environmental variables such as humidity, temperature, pH, or moisture \cite{SensorsA98:online}. These sensors are based on RFID technology and implement the EPC Gen 2 protocol\cite{EPCUHFGe31:online} for communication with commodity readers. The small form factor of these sensors allow them to be deeply embedded within an agricultural ecosystem. %For example, in an orchard, there could be tens of devices per tree or  that collect data from different parts of the tree, i.e. leaves, stem, top of canopy, and roots; 
+For example, in a field there could be sensors deployed on the leaves, growing fruits and vegetables, as well as in the top-soil. We advocate a battery-free approach towards sensing because of its low cost, small form factor, lack of required maintenance. Furthermore, eliminating chemical batteries will minimize potential health hazards introduced by sensor placement. 
+
+\noindent\textbf{Design Considerations:} There are two primary design considerations in accommodating this tier of devices:
 % Devices in bottom tier are only capable of data collection using tiny, batteryless, intermittently-powered devices.
-\\\textbf{Device Placement:} 
-The bottom-tier devices are densely deployed across the farm. For example, there may be multiple devices per tree that collect data from different parts, i.e. leaves, stem, top of canopy, soil, etc. 
-The high spatial granularity can help in getting an insight into the existence of micro-climates, their effect on the yield, spread of diseases, the environmental conditions that lead to pest attacks or spread of fungi, etc.  
-\\\textbf{Data Collection:} 
-The primary purpose of these devices is to take a measurement of the environmental variable they are intended for. These devices take the measurement when they are powered by the power source and transmit the collected data to a reader, both located at the mid-tier device. The power source and the reader node may be same depending upon the technology. The nodes in this tier can only transmit data to mid-tier devices and cannot talk to each other. An existing technology for tiny, batteryless, and intermittently powered device is low power wireless sensing using Radio Frequency Identification (RFID). These tags cannot store energy and are triggered
-using backscattering mechanism in radio frequency signals (RF). Also, nodes containing solar panels are intermittently powered through laser beam. 
-\\\textbf{Challenges:} 
-There are both hardware and software level challenges in this tier, some of those challenges are outlined below. 
 
-\noindent
-\textbf{Finding optimal reader-device distance:}
-One of the main challenge is to calibrate the distance between these tiny devices and their readers for optimal data collection. Increasing the number of antennas on the reader potentially increases the communication range. Synchronizing various readers also add to spatial diversity, however implementing a timing service on resource constrained devices have its own challenges []. Another key challenge is to estimate how many devices can be accommodated by each reader given the device power requirement and time resolution constraints.   
+\noindent\textbf{1. Power:} 
+ Bottom-tier sensors buffer minimal amounts energy and are remotely powered by a radio frequency carrier. Recent work has demonstrated that RFID readers can be used for this purpose over long distances when used in a MIMO configuration \cite{wang2019pushing}. Our architecture employs proximate readers and antennas powered by solar harvesting and deployed near or within a field or tree block to periodically activate these sensors; these readers collaborate to increase coverage areas and provide power to specific subsets of sensors.%These dense deployments and high spatial resolution is difficult to achieve with battery-powered IoT sensors imposed by the power, size, and cost constraints [].   
 
-\noindent
-\textbf{Determining ideal power and duration:} An important challenge is to determine how much power and for how long is required for an accurate reading. It is important to strike the right balance as higher power levels for long duration may lead to time and energy waste, while low power for short duration may result in missing or erroneous data. 
+\noindent\textbf{2. Communications:} 
+The primary purpose of these devices is to take a measurement of the environmental variable they are intended for. Sensor values are locally stored when powered from the RF carrier and use a backscatter link to transmit these values to a mid-tier reader. The carrier emitter and receiver may operate as a single reader in a monostatic configuration or multiple devices in a bistatic configuration. The nodes in this tier can only transmit data to a mid-tier device and cannot talk to each other. %Also, nodes intermittently powered through laser beam can be used~\cite{naveed-lamp}. 
 
-\noindent
-\textbf{Handling missing or erroneous data:}
- There is a possibility of missed or erroneous communication with any intermittently powered batteryless devices and a software capable of extracting knowledge from missed data needs to be explored. 
+\noindent\textbf{Challenges:} There are many hardware and software level challenges in this tier, two of which are outlined below. 
+
+\noindent\textbf{1. Placing readers and localizing sensors:}
+One of the main challenge is to calibrate the distance between these tiny devices and their readers for optimal data collection. Increasing the number of antennas and reader potentially increases the communication range -- coordinating and aligning reader. In-the-wild deployment in a farm settings make these tasks more challenges as weather may impact the device characteristics; the location and orientation of devices may change over time. 
+Another key challenge is to estimate how many devices can be accommodated by each reader given the device power requirement and time resolution.   
+% \noindent\textbf{Determining ideal power and duration:} An important challenge is to determine how much power and for how long is required for an accurate reading. It is important to strike the right balance as higher power levels for long duration may lead to time and energy waste, while low power for short duration may result in missing or erroneous data. 
+
+\noindent\textbf{2. Handling missing or erroneous data:}
+ There is a possibility of missed or erroneous communication with intermittently powered batteryless devices and software capable of extracting knowledge from missed data needs to be explored. 
 
 
 \subsection{Mid-Tier} 
-The mid-tier consists of resourceful devices that collect data from bottom-tier, process and aggregate data from variety of sensors, make real-time actuation decisions, and forward the collected data to the top-tier. 
+The mid-tier consists of resourceful devices (i.e. cameras) that collect data from bottom-tier sensors, process and aggregate data from variety of sensors, make real-time actuation decisions, and forward the collected data to the top-tier. Mid-tier devices are placed such that they are able to both collect data from bottom-tier devices and are also able to capture diverse images from areas of interest.
 
-\noindent\textbf{Device Placement:} The mid-tier nodes are sparsely deployed across the farm. The placement of these devices depends upon the technology used in the bottom-tier, the resolution requirement of the video streams, and placement of actuating devices and their communication technology. For example, RFID-based bottom-tier nodes may require the mid-tier device to be at maximum of 100ft for reliable data collection, the camera resolution may dictate a mid-tier device for each block of trees, and actuation device communication technology may need the mid-tier node to be at maximum of 50ft. The mid-tier nodes placement is such that it satisfies all the constraints. 
+% \noindent\textbf{Device Placement:} The mid-tier nodes are sparsely deployed across the farm. The placement of these devices depends upon the technology used in the bottom-tier, the resolution requirement of the video streams for apple thinning like applications, and placement of actuating devices and their communication technology. For example, RFID-based bottom-tier nodes may require the mid-tier device to be at maximum of 100ft for reliable data collection, the camera resolution may dictate a mid-tier device for each block of trees, and actuation device communication technology may need the mid-tier node to be at maximum of 50ft. The mid-tier nodes placement is such that it satisfies all the constraints. The requirement of high resolution images from a fixed angle for apple thinning application motivated the static deployment and careful placement of the mid-tier node as well.
 
 \noindent\textbf{Mid-tier Services:}
-Devices in mid-tier provide various services that are outlined below.
-\\\textbf{1. Data Collection:} The mid-tier nodes power the densely deployed bottom-tier nodes in their vicinity and receive data from them. In addition, they also gather data from the high-resolution sensors that are directly interfaced with them, i.e. cameras, GPS, anemometer, pyranometer, etc. 
-\\\textbf{2. Aggregation \& Inferencing:} The mid-tier nodes are responsible for aggregating data from different sources such as bottom-tier nodes and high-resolution sensors, in order to enable various precision agriculture applications. These applications use the aggregate data to make real-time inferences. For example, a disease detection application may combine high-resolution camera feed with the environmental variables such as temperature to detect the early signs of a disease, predict disease type, and estimate the extent of disease spread. The inference tasks are typically enabled by machine learning and computer vision techniques. To enable the data processing, aggregation, and inference tasks, mid-tier nodes require a processor that provides interfaces and have a capability to run ML/AI tasks, i.e. Jetson boards, Coral Edge TPU, BeagleBone AI, Arrow I.IMX8X, etc. 
-% Aggregate data collected from bottom-tier devices and other mid-tier devices to make real-time inferences.
-\\\textbf{3. Forwarding:} The mid-tier nodes are capable of horizontal as well as vertical communication in both directions. In vertical direction, they communicate with the bottom-tier to gather data from bottom-tier nodes and upload all the data aggregated at the mid-tier to the top-tier. In addition to the uplink communication to the top-tier, they also receive data and control instructions from the top-tier to enable precision agriculture applications. The link between the top-tier and mid-tier may be enabled by a high bandwidth communication technology such as WiFi, cellular, etc. The mid-tier nodes can also talk with each other to do data sharing, aggregation, and collaborative edge-computing tasks. For example, mid-tier devices may communicate to share the data about a tree that is partially covered by two devices or they may need to run a heavy ML/AI task across multiple devices. The link between the mid-tier devices will be enabled by low power IoT communication technologies such as BLE, IEEE 802.15.4, etc. 
-\\\textbf{4. Actuation:} The mid-tier nodes communicate with the actuation devices to perform a task based on the real-time inferences. For example, a insecticide spraying application may require the mid-tier node to make a real-time inference on the population of insects that gathers after pheromone spray. Once the desired population is attracted, mid-tier node will actuate the insecticide spraying nozzle to kill all the insects. The actuation device may be directly interfaced with the processor through on-board interfaces such as USB, I2C, SPI, or connect wirelessly through a low power communication technology such as BLE, IEEE 802.15.4, etc. 
-\\\textbf{Challenges:} When to power and collect data from bottom-tier nodes. Edge device and energy harvesting issues. Data aggregation or sensor fusion across various sensors etc. In all the discussion, motivate using agriculture use cases.
-\begin{itemize}
-    \item \textbf{Managing Bottom-tier Devices:} To enable high spatial resolution, bottom-tier nodes need to be deployed in large numbers in a way that does not require careful installation. In addition, these devices may move due to wind, rain, and irrigation water. The task of locating, powering, and reading data from these floating devices will present unique challenges. 
-    \item \textbf{Energy Harvesting:} The grid power is typically not available in the farm and mid-tier devices will need to harvest energy for their operations from source such as solar PV, wind, etc. The energy harvested from these renewable resources is highly stochastic and dependent upon weather and shading from nearby trees. The mid-tier devices will encounter the challenge of predicting the expected energy into the future and schedule their operations based on the energy budget.  
-    \item \textbf{Collaborative Edge Computation:} Some of the mid-tier services may need collaboration across devices. For example, a precision mapping application may need to combine/stitch data from multiple mid-tier devices or an analytics application may need to analyze temperature data at various points in the farm. These collaboration among devices raises challenges related to energy management, networking, and scheduling tasks. 
-    \item \textbf{Data Aggregation:} The network connection with the top-tier can be unreliable, as in most farm settings. The network connectivity may be possible at only one or few of the devices in the mid-tier. This situation raises challenges related to data aggregation across nodes. 
-\end{itemize}
+Devices in mid-tier provide various services to enable the aforementioned applications.\\
 
+\noindent\textbf{1. Data Collection:} The mid-tier nodes power the densely deployed battery-free bottom-tier nodes in their vicinity and receive data from them. Additionally, they themselves gather data from sensors that are directly interfaced with them, i.e. cameras, anemometers, pyranometers, wind gauges.\\
+\noindent\textbf{2. Aggregation \& Inferencing:} The mid-tier nodes are responsible for aggregating data from different sources such as bottom-tier nodes and high-resolution sensors, in order to enable precision agriculture applications that require the data from multiple sensors to make inferences. %For example, microclimate analysis application needs to combine data from different environmental sensors and insecticide spraying needs temperature and visual data. 
+These inference tasks are enabled by machine learning and computer vision techniques. To enable the data processing, aggregation, and inference tasks, mid-tier nodes require a processor that provides these interfaces and are able to run ML/AI tasks.%, i.e. Jetson boards, Coral Edge TPU, BeagleBone AI, Arrow I.IMX8X, etc.
+
+% Aggregate data collected from bottom-tier devices and other mid-tier devices to make real-time inferences.
+%\\\textbf{3. Forwarding:} Mid-tier nodes are capable of horizontal as well as vertical communication in both directions. In the vertical direction, they gather data from bottom-tier nodes and upload data aggregated at the mid-tier to the top-tier. Additionally, the mid-tier receives data and control instructions from the top-tier to enable precision agriculture applications. The link between these tiers will be enabled by a high bandwidth communication technology such as WiFi or cellular. Peer-to-peer communication between mid-tier nodes enables data sharing, aggregation, and collaborative edge-computing tasks using a low power wireless protocol, i.e. Bluetooth 5.0, IEEE 802.15.4. Collaborative edge computing can enable or improve the performance of applications. %For example, the apple thinning application can combine partial images of apple clusters captured by different cameras or run a computationally-intensive cluster sizing algorithm on multiple mid-tier devices. 
+% For example, mid-tier devices may communicate to share the data about a tree that is partially covered by two devices or they may need to run a heavy ML/AI task across multiple devices. 
+\noindent\textbf{3. Actuation:} The mid-tier nodes communicate with actuators to perform tasks based on real-time inferences. The actuation device may be directly interface through a wired or wireless protocol. The real-time processing and actuation capability is necessary for time-critical applications. 
+%such as smart insecticide spraying, where the delay introduced by using cloud resources over an unreliable network will lead to disappearing of pheromones effect, poor eradication of insects, and waste of spray.
+
+\noindent\textbf{Challenges:} The challenges at the mid-tier relate to the data collection from bottom-tier, edge computing, and energy harvesting issues. There are also challenges related to data aggregation or sensor fusion across various sensors etc. 
+
+\noindent\textbf{1. Energy Management:} Grid power is not typically available at remote farm locations and mid-tier devices will need to harvest energy for their operations. The energy harvested from these renewable resources is highly stochastic and dependent upon weather and shading from nearby trees. The mid-tier devices will need to predict energy harvested in the future and schedule diverse activities including bottom-tier sensors, sampling mid-tier sensors, running inferences, and communicating data within and across tiers.  
+
+% \noindent\textbf{Managing Bottom-tier Devices:} To enable high spatial resolution, bottom-tier nodes need to be deployed in large numbers in a way that does not require careful installation. The large number is needed to cover the different parts of the canopy and avoiding careful installation will enable practical deployments. In addition, these devices may move due to wind, rain, and irrigation water. The task of locating, powering, and reading data from these floating devices will present unique challenges. 
+    
+% \noindent\textbf{Energy Harvesting:} The grid power is typically not available in the farm and mid-tier devices will need to harvest energy for their operations from source such as solar PV, wind, etc. The energy harvested from these renewable resources is highly stochastic and dependent upon weather and shading from nearby trees. The mid-tier devices will encounter the challenge of predicting the expected energy into the future and schedule their operations based on the energy budget.  
+    
+\noindent\textbf{2. Collaborative Edge Computation:} Some of the mid-tier services may need collaboration across devices. For example, the microclimate analysis application needs to fuse environmental data from different locations in the farm. Collaboration among devices raises challenges related to energy management, networking, and scheduling tasks. 
+
+\noindent\textbf{3. Developing Data Pipelines:} The mid-tier devices will be collecting a lot of high temporal and spatial resolution data about multiple variables. All the applications will not require the same or even the highest resolution. For example, microclimate analysis application will require visual data only at the time resolution of the environmental data. The mid-tier device should develop pipelines that provide the users or the applications an access to the data from the required sources at the desired granularity. 
+    
+    % The network connection with the top-tier can be unreliable, as in most farm settings. The network connectivity may be possible at only one or few of the devices in the mid-tier. This situation raises challenges related to data aggregation across nodes. 
 
 % \fatima{You can replace "bottom-tier" sort of names with something relevant. Figure is only for reference. You can modify it in any way.}
 
@@ -67,29 +84,34 @@ Devices in mid-tier provide various services that are outlined below.
 
 \subsection{Top-tier}
 
-The top tier is hosted in the cloud and provides the user an interface to deploy applications and access the data. The keys tasks we envision the user to perform are outlined. 
+The top tier is hosted in the cloud through an unreliable high bandwidth network and provides the user an interface to deploy applications, view data or application summaries, access the raw data, provides sensor measurements on-demand. 
 
 \noindent
-\textbf{Top-tier Services: } The top-tier of OrchardScope provides various services that are outline below. 
+\textbf{Top-tier Services: } The top-tier of \myname{} provides various services that are outline below. 
 
 \noindent
-\textbf{1. Application Deployment:} The primary task of the user is to deploy applications ranging from generic tasks of gathering particular data at a desired granularity to specific applications such as monitoring insect traps. The applications combine both the data acquisition tasks as well as machine learning applications to decide on specific actions to take. 
+\textbf{1. Simplifed Application Deployment:} The primary task of the user is to deploy applications ranging from generic tasks of gathering particular data at a desired granularity to deploying specific applications such as smart insecticide spray. The user can specify the required data pipeline for different applications and should be able to connect the appropriate data pipeline to the input/output of the application-specific code. The top-tier provides the user with an ability to push application code, AI/ML model training jobs, or run diagnostic code. Additionally, the applications that are not latency-sensitive and require significant resources can be deployed in the cloud to save energy and computational resources at the edge.
+%, i.e. For example, the output pipeline of smart insecticide spraying will connect to the actuator input to release the spray. 
+
 
 \noindent
-\textbf{2. Summary \& Overview:} The user will be able to access the summary of the collected data or results of deployed applications. For example, user may want to see the temperature at various parts of the tree or they may be interested in the number and types of insects captured by the trap. 
+\textbf{2. Summary and Overview:} The user will be able to access the summary of the collected data or results of deployed applications. For example, user should be able to map the temperature differential across microclimates, look at the temperature profile of a tree, or inspect the post-insecticide spraying images to visualize the number and types of insects killed. 
 
 \noindent
-\textbf{3. Raw Data Access:} The user, especially academic researchers, may be interested in accessing the raw data to either build new applications or retrain the existing ML applications using the most recent data. 
+\textbf{3. Raw Data Access:} The user, especially academic researchers, need access to the raw data to either build new applications or retrain the existing ML applications that can not be trained across resource-constrained mid-tier devices. 
 
 \noindent
-\textbf{4. Data On-demand:} The application tier provides manual control to the academic researchers who desire the ability to control cameras and sensors to acquire data on-demand. 
+\textbf{4. Data On-demand:} The application tier provides manual control to the academic researchers who desire the ability to control cameras and sensors to acquire data on-demand or locate new objects of interests in the farm. This access allows fast and easy labeling of new objects to be monitored and a sanity check on the sensor data or the application output. \\
 
-\noindent
-\textbf{Key Challenges:} We next outline the challenges faced in the design and development of the OrchardScope application tier. 
-\begin{itemize}
-    \item \textbf{Manual Control:} Providing manual user control while satisfying the requirements of the applications that are running on OrchardScope will be a challenging task. 
-    \item \textbf{Edge Training:} There has been a lot of work on training ML models across distributed edge devices, cite[1,2]. However, training models on resource constrained solar-powered nodes will pose unique challenges. 
-\end{itemize}
+\noindent\textbf{Challenges:} We next outline the challenges faced in the design and development of the \myname{} top tier.
+
+\noindent\textbf{1. Cloud vs. Edge:} \myname{} will run all the latency-sensitive applications at the edge. For the non-time sensitive applications, the aim is to deploy those at the edge if enough computational and energy resources are available. However, estimating available resources at the edge and deciding which applications run there presents significant challenges.
+    
+\noindent\textbf{2. On-demand Access:} Providing manual user control while satisfying the requirements of the applications that are running on \myname{} mid-tier devices will be a challenging task. It will be interesting to see how extensive work on scheduling interactive and batch jobs on server can be applied to solve this problem~\cite{parallel-scheduling}.
+    
+%\noindent\textbf{Edge Training:} There has been a lot of work on training ML models across distributed edge devices~\cite{federated-ml}. However, training models on resource constrained solar-powered nodes will pose unique challenges. 
+    
+%\noindent\textbf{Effective User Interface:} The task of developing data pipelines, developing application code, integrating applications with data, and using on-demand access can be very challenging for users who are not expert in the field. It will raise challenges related to human computer interaction, i.e. providing easy to use interface with clear instructions. 
 
 
 % \subsubsection{Performance Evaluation:} We will evaluate the system performance on the basis of average data rate achieved in the network, its packet reception rate, and the number of devices the network can support. 

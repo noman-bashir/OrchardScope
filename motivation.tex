@@ -1,15 +1,20 @@
-There has been a lot of work on developing precision agriculture systems, both in industry and academia. 
-However, it is generally application-specific, assumes reliable internet connectivity, does not provide high spatial and temporal resolution data, and does not support real-time applications. 
-In this section, we highlight the problems and how they motivate our system. 
+Existing work on developing precision agriculture systems assumes strong cloud connectivity and lacks temporally and spatially rich ground-truth data. 
+% There has been a lot of work on developing precision agriculture systems, both in industry and academia. 
+% However, it is generally application-specific, assumes reliable internet connectivity, does not provide high spatial and temporal resolution data, and does not support real-time applications. 
+In this section, we discuss how these shortcomings limit precision agriculture application and how they motivate our system design. 
+
 
 \noindent
-\textbf{Lack high temporal, spatial resolution data:}
-The existing systems primarily focus on the use of drones to enable precision agriculture applications, i.e. building farm maps, monitoring irrigation, etc. While the focus of existing systems have generally been on high-level analytics, the drones can also be used for disease identification, pest attack detection, and monitoring insects. 
-However, the required size of drone fleet, management complexity, and high cost would hinder practical deployment of applications that require high spatial resolution (capturing tree leaves, leaf stems, and individual fruits) at a high temporal resolution (real-time or every few minutes). 
-Drones are also not suitable for applications such as apple cluster sizing that require the image of the desired cluster to be taken from a fixed angle, requiring additional hardware such as QR tags and software complexity. 
-An alternative is to deploy static cameras to take high resolution images of the farm at various scales, a solution that satisfies the aforementioned problem of taking consistent images as well. 
-The use of static cameras in the prior work focuses on using only low resolution static cameras to capture high-level images of the farm.
-However, the capturing of high resolution images of different points of interests in the farm needs sophisticated camera control strategies for the variable focal length, high resolution cameras, that has not been discussed in the prior work. 
+\textbf{Lack of temporally and spatially rich ground-truth data:}
+Existing precision agriculture systems gather environmental data using sensors that are sparsely deployed across a farm due to the cost, maintenance, and other data acquisition constraints. In most cases, this sparse data is used as is and  does not represent a complete picture of the farm's environmental profile.  At best, this data is extrapolated with the help of video streams, typically from a drone, to the whole farm by assigning sensor values to the visually and spatially similar places~\cite{vasisht2017farmbeats}. This approach has two main drawbacks. First, the data can be extrapolated to only the places visible by a drone and capturing necessary imagery may be highly complex or even impossible, i.e. under a tree canopy. Second, data extrapolation masks the microclimates that exist within the farm as visually and spatially similar regions may still exhibit considerable differences in their environmental profile~\cite{microclimates, microcolimate-effect, microclimate-specifics}. 
+% However, using drones does not scale well to the places that may not be directly visible, i.e. under the tree, and this may hide the microclimates that exist within farms as places that are visually and spatially similar may still exhibit considerable differences. 
+
+
+% The existing systems primarily focus on the use of drones to enable precision agriculture applications, i.e. building farm maps, monitoring irrigation, etc. While the focus of existing systems have generally been on high-level analytics, the drones can also be used for disease identification, pest attack detection, and monitoring insects. However, the required size of drone fleet, management complexity, and high cost would hinder practical deployment of applications that require high spatial resolution (capturing tree leaves, leaf stems, and individual fruits) at a high temporal resolution (real-time or every few minutes). 
+% Drones are also not suitable for applications such as apple cluster sizing that require the image of the desired cluster to be taken from a fixed angle, requiring additional hardware such as QR tags and software complexity. 
+% An alternative is to deploy static cameras to take high resolution images of the farm at various scales, a solution that satisfies the aforementioned problem of taking consistent images as well. 
+% The use of static cameras in the prior work focuses on using only low resolution static cameras to capture high-level images of the farm.
+% However, the capturing of high resolution images of different points of interests in the farm needs sophisticated camera control strategies for the variable focal length, high resolution cameras, that has not been discussed in the prior work. 
 
 
 % The existing systems focus on the use of either static cameras or drones to build farm maps.
@@ -24,12 +29,17 @@ However, the capturing of high resolution images of different points of interest
 % There is a need of a system that provides high resolution data over space and time while being extensible to meet requirements of variety of applications. 
 
 \noindent
-\textbf{Strong Cloud Dependency:}
-Most of the prior work is either focused on developing analytics-heavy, non time-critical applications or assumes strong cloud connectivity for their applications.
-However, there are numerous applications that require fast response (hours to real-time) on the farms in the wild where internet connectivity is not guaranteed, i.e. smart pesticide spray, XYZ disease attack detection. 
-In addition, the cost advantage of buying versus renting is very high for specialized hardware with a recent analysis estimating that purchasing a GPU-based deep learning cluster costs 90\% less than renting one on demand from AWS~\cite{deep-learning}.
-Therefore, an edge computing system that does not assume high bandwidth cloud connectivity is able to support a variety of applications at the fraction of the cost. 
-However, such a system will require innovative solutions to ensure remote user access to the data and control over the deployed system, we discuss such challenges and possible solutions in the upcoming sections. 
+\textbf{Lack of real-time response, strong cloud dependency:}
+Most existing precision agriculture systems assume strong cloud connectivity and only perform data acquisition, processing, and compression tasks at the end device. However, these cloud-dependent system incur very high latencies, particularly in settings where the farm/cloud connection is unreliable or non-existent. This is acceptable for applications that are focused on analysis do not have strict deadlines and therefore have relaxed latency requirements. However, unpredictable and unbounded latency can be a killer for applications that require real-time response, i.e. insecticide spraying based on visual analysis of attracted insects after pheromone spray. 
+
+% Most of the prior work is either focused on developing analytics-heavy, non time-critical applications or assumes strong cloud connectivity for their applications.
+% However, there are numerous applications that require fast response (hours to real-time) on the farms in the wild where internet connectivity is not guaranteed, i.e. smart pesticide spray, XYZ disease attack detection. 
+% In addition, the cost advantage of buying versus renting is very high for specialized hardware with a recent analysis estimating that purchasing a GPU-based deep learning cluster costs 90\% less than renting one on demand from AWS~\cite{deep-learning}.
+% Therefore, an edge computing system that does not assume high bandwidth cloud connectivity is able to support a variety of applications at the fraction of the cost. 
+% However, such a system will require innovative solutions to ensure remote user access to the data and control over the deployed system, we discuss such challenges and possible solutions in the upcoming sections. 
+
+% A majority of the work in precision agriculture today focuses on applications that require a response times of hours to days, i.e. crop health monitoring, smart irrigation~\cite{precisionhawk, fieldagent-sentera}. 
+% There are myriad applications that can benefit from real-time, closed loop control, i.e. spraying insecticide following a pheromones spray, that cannot be done with the existing systems. There is a need for a system that supports real-time acquisition, processing, and decision making on the visual and environmental data.
 
 % We should motivate against total cloud dependency by citing lack of connectivity and cloud costs. There may be places where the farmers may have internet connectivity on the farm, a system designed without this assumption would certainly be preferable. 
 % Second, buying a computer to do machine-learning and computer vision tasks is currently cheaper than the cloud-based options. The biggest attraction of the cloud is its scalability. 
@@ -38,17 +48,12 @@ However, such a system will require innovative solutions to ensure remote user a
 
 % Another point that we need to handle is the availability of the raw data and processed output to the end-user. For a farmer, they may only be interested in the final output, but agricultural scientists may also need access to the raw data. Our default setting is to process everything at the edge and give only final output. We need to address how to provide access to the raw data. We have the gateway node that connects with the cloud, but is cellular connection suitable for transferring large image data?
 
-\noindent
-\textbf{Application specific, non-extensible system design:}
-Most of the precision agriculture systems that exist today cater to only specific applications. For example, See \& Spray technology by Blue River focuses only on smart herbicide spraying~\cite{see&spray}, CropX platform is designed for smart irrigation and fertilizing~\cite{cropx}, and FieldAgent and PrecisionHawk systems focus on generating field maps to monitor crop growth and health~\cite{precisionhawk, fieldagent-sentera}. The heterogeneity of devices and proprietary technology used by different vendors will give rise to similar problems of interoperability and complexity faced by the Smart Home and IoT community today~\cite{home-os-challenges}. Therefore, there is a need for an open-source, simple, and extensible system that enables its users to deploy basic monitoring and control applications, while also enabling them to interpose on them to implement new precision agriculture applications.
+% \noindent
+% \textbf{Application specific, non-extensible system design:}
+% Most of the precision agriculture systems that exist today cater to only specific applications. For example, See \& Spray technology by Blue River focuses only on smart herbicide spraying~\cite{see&spray}, CropX platform is designed for smart irrigation and fertilizing~\cite{cropx}, and FieldAgent and PrecisionHawk systems focus on generating field maps to monitor crop growth and health~\cite{precisionhawk, fieldagent-sentera}. The heterogeneity of devices and proprietary technology used by different vendors will give rise to similar problems of interoperability and complexity faced by the Smart Home and IoT community today~\cite{home-os-challenges}. Therefore, there is a need for an open-source, simple, and extensible system that enables its users to deploy basic monitoring and control applications, while also enabling them to interpose on them to implement new precision agriculture applications.
 
 % The cost and complexity of combining these systems to provide an holistic view of the farms will deter farmers and academic researchers. 
 
-
-\noindent
-\textbf{Lack of real-time support:}
-Majority of the work in precision agriculture today focuses on applications that require a response time of hours to days, i.e. crop health monitoring, smart irrigation~\cite{precisionhawk, fieldagent-sentera}. 
-There is a slew of applications that may require real-time response, i.e. spraying insecticide following a pheromones spray, that cannot be done with the existing systems. There is a need for a system that supports real-time acquisition, processing, and decision making on the visual and environmental data. 
 
 % \fatima{Another point could be that we provide an extensible test bed that can be tailored towards the needs of agriculture researchers in various domains ranging from increasing yields, sustainability, and lesser use of chemicals etc. Other solutions only cater to specific use cases?}
 
