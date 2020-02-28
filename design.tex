@@ -38,8 +38,7 @@ The primary purpose of these devices is to take a measurement of the environment
 \noindent\textbf{Challenges:} There are many hardware and software level challenges in this tier, two of which are outlined below. 
 
 \noindent\textbf{1. Placing readers and localizing sensors:}
-One of the main challenge is to calibrate the distance between these tiny devices and their readers for optimal data collection. Increasing the number of antennas and reader potentially increases the communication range -- coordinating and aligning reader. In-the-wild deployment in a farm settings make these tasks more challenges as weather may impact the device characteristics; the location and orientation of devices may change over time. 
-Another key challenge is to estimate how many devices can be accommodated by each reader given the device power requirement and time resolution.   
+One of the main challenge is to calibrate the distance between these tiny devices and their readers for optimal data collection. Increasing the number of antennas and reader potentially increases the communication range -- coordinating and aligning reader operations can boost range, but the system needs to periodically scan for an unknown number of sensors and estimate their locations. In-the-wild deployments at farms makes these tasks more challenges as weather may impact the device characteristics; the location and orientation of devices may change over time. These tasks need to operate within a stringent energy budget.
 % \noindent\textbf{Determining ideal power and duration:} An important challenge is to determine how much power and for how long is required for an accurate reading. It is important to strike the right balance as higher power levels for long duration may lead to time and energy waste, while low power for short duration may result in missing or erroneous data. 
 
 \noindent\textbf{2. Handling missing or erroneous data:}
